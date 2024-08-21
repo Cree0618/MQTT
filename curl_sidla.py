@@ -185,14 +185,12 @@ def main():
             file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv"
         )
-        # in df_ares_modified change the "IČO" to "ICO" 
-        df_ares_modifiedtodownload = df_ares_modified.copy()
-        df_ares_modifiedtodownload = re.sub(r'IČO', 'ICO', df_ares_modifiedtodownload)
-        df_ares_modifiedtodownload
-        csv_ares_modified = df_ares_modifiedtodownload.to_csv(index=False)
+        
+        csv_ares_modified = df_ares_modified.to_csv(index=False)
+        csv_ares_modified = re.sub(r'IČO', 'ICO', csv_ares_modified)
         st.download_button(
             label="Stáhnout Ares data do CSV",
-            data=csv_ares_modified ,
+            data=csv_ares_modified,
             file_name="ares_api_data.csv",
             mime="text/csv"
         )
