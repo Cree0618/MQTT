@@ -140,10 +140,12 @@ def main():
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
         # Option to download results
-        csv = ico_in_api_not_in_csv.to_csv(index=False)
+        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
+        #change the "IČO" column to "ICO" for better readability
+        csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
         st.download_button(
             label="Stáhnout výsledky jako CSV",
-            data=csv,
+            data=csv_to_download,
             file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv",
             
