@@ -110,7 +110,7 @@ def main():
             if result:
                 subjects = extract_subject_data(result, address)
                 all_subjects.extend(subjects)
-                st.write(f"Found {len(subjects)} subjects for address {address}")
+                st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
             else:
                 st.write(f"No data retrieved for address {address}")
             time.sleep(1)
@@ -131,20 +131,20 @@ def main():
         ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
 
         # Display results
-        st.subheader("Results")
-        st.write(f"Total IČO numbers in original CSV: {len(original_df_modified)}")
-        st.write(f"Total IČO numbers in API data: {len(df_ares_modified)}")
-        st.write(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
+        st.subheader("Výsledky")
+        st.write(f"CELKEM IČO v originálním csv: {len(original_df_modified)}")
+        st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
+        st.write(f"IČO v Aresu ale NE v posledním csv: {len(ico_in_api_not_in_csv)}")
 
-        st.subheader("Examples of IČO numbers in API but not in original CSV:")
-        st.dataframe(ico_in_api_not_in_csv.head())
+        st.subheader("IČO v Aresu ale NE v posledním csv - náhled prvních 30")
+        st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
         # Option to download results
         csv = ico_in_api_not_in_csv.to_csv(index=False)
         st.download_button(
-            label="Download results as CSV",
+            label="Stáhnout výsledky jako CSV",
             data=csv,
-            file_name="ico_in_api_not_in_original_csv.csv",
+            file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv",
         )
 
