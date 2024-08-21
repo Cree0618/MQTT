@@ -190,7 +190,7 @@ def main():
             csv_ares_modified = df_ares_modified.to_csv(index=False)
             st.download_button(
                 label="Stáhnout Ares data do CSV",
-                data=csv_ares_modified + df_ares_modified
+                data=csv_ares_modified + df_ares_modified,
                 file_name="ares_api_data.csv",
                 mime="text/csv"
             )
