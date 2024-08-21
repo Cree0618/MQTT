@@ -71,7 +71,7 @@ def format_address(payload):
 def main():
     st.title("Kontrola  firemních sídel na PST budovách dle Aresu a porovnání s posledním CSV")
 
-    uploaded_file = st.file_uploader("Choose a CSV file to replace the original", type="csv")
+    uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
 
     if uploaded_file is not None:
         original_df = pd.read_csv(uploaded_file, delimiter=';')
@@ -98,21 +98,21 @@ def main():
         {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
     ]
 
-    if st.button("Vyčíst data z Aresu a porovnat s posledním CSV"):
+    if st.button("Vyčíst data z Aresu a porovnat s nahraným CSV"):
         progress_bar = st.progress(0)
         status_text = st.empty()
 
         all_subjects = []
         for i, payload in enumerate(payloads):
             address = format_address(payload)
-            status_text.text(f"Fetching data for address {address}...")
+            status_text.text(f"Získávám data z Aresu pro adresu {address}...")
             result = api.search_subjects(payload)
             if result:
                 subjects = extract_subject_data(result, address)
                 all_subjects.extend(subjects)
                 st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
             else:
-                st.write(f"No data retrieved for address {address}")
+                st.write(f"Žádná data nenalezena pro adresu {address}")
             time.sleep(1)
             progress_bar.progress((i + 1) / len(payloads))
 
@@ -136,7 +136,7 @@ def main():
         st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
         st.write(f"IČO v Aresu ale NE v posledním csv: {len(ico_in_api_not_in_csv)}")
 
-        st.subheader("IČO v Aresu ale NE v posledním csv - náhled prvních 30")
+        st.subheader("Sídla ke kontrole - nenalezena v posledním CSV")
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
         # Option to download results
@@ -146,7 +146,10 @@ def main():
             data=csv,
             file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv",
+            
+            
+        
         )
-
+st.title("Vytvořeno KZ 2024")
 if __name__ == "__main__":
     main()
