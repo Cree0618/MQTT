@@ -17,7 +17,7 @@ class AresAPI:
         if response.status_code == 200:
             self.cookie = self.session.cookies.get("GN-TOKEN-CSP")
             self.cookie_expiry = datetime.now() + timedelta(hours=1)
-            st.success("Cookie refreshed successfully")
+            st.success("Cookie úspěšně obnoven")
         else:
             st.error(f"Failed to refresh cookie. Status code: {response.status_code}")
 
@@ -68,36 +68,19 @@ def format_address(payload):
         address += sidlo['cisloOrientacniPismeno']
     return address
 
-@st.cache_data
-def fetch_data(api, payloads):
-    all_subjects = []
-    for payload in payloads:
-        address = format_address(payload)
-        result = api.search_subjects(payload)
-        if result:
-            subjects = extract_subject_data(result, address)
-            all_subjects.extend(subjects)
-            st.write(f"Found {len(subjects)} subjects for address {address}")
-        else:
-            st.write(f"No data retrieved for address {address}")
-        time.sleep(1)
-    return pd.DataFrame(all_subjects)
-
 def main():
-    st.title("ARES API Data Comparison")
+    st.title("Kontrola firemních sídel na PST budovách dle Aresu a porovnání s posledním stavem")
 
-    uploaded_file = st.file_uploader("Choose a CSV file to replace the original", type="csv")
+    uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
 
     if uploaded_file is not None:
         original_df = pd.read_csv(uploaded_file, delimiter=';')
-        st.success("File successfully uploaded and processed!")
+        st.success("Soubor úspěšně nahrán a zprocesován!")
     else:
-        st.warning("Please upload a CSV file to proceed.")
+        st.warning("Prosím nahrajte CSV soubor pro porovnání")
         return
 
     api = AresAPI()
-
-
 
     payloads = [
         {"sidlo":{"cisloDomovni":1442,"cisloOrientacni":1,"cisloOrientacniPismeno":"b","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
@@ -115,17 +98,25 @@ def main():
         {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
     ]
 
-    if 'df_ares' not in st.session_state:
-        st.session_state.df_ares = None
+    if st.button("Vyčíst data z Aresu a porovnat s nahraným CSV"):
+        progress_bar = st.progress(0)
+        status_text = st.empty()
 
-    if st.button("Fetch and Compare Data"):
-        with st.spinner("Fetching data from API..."):
-            st.session_state.df_ares = fetch_data(api, payloads)
-        
-        st.success("Data fetched successfully!")
+        all_subjects = []
+        for i, payload in enumerate(payloads):
+            address = format_address(payload)
+            status_text.text(f"Získávám data z Aresu pro adresu {address}...")
+            result = api.search_subjects(payload)
+            if result:
+                subjects = extract_subject_data(result, address)
+                all_subjects.extend(subjects)
+                st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
+            else:
+                st.write(f"Žádná data nenalezena pro adresu {address}")
+            time.sleep(1)
+            progress_bar.progress((i + 1) / len(payloads))
 
-    if st.session_state.df_ares is not None:
-        df_ares = st.session_state.df_ares
+        df_ares = pd.DataFrame(all_subjects)
         
         # Data processing
         original_df_modified = original_df.copy()
@@ -140,38 +131,33 @@ def main():
         ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
 
         # Display results
-        st.subheader("Results")
-        st.write(f"Total IČO numbers in original CSV: {len(original_df_modified)}")
-        st.write(f"Total IČO numbers in API data: {len(df_ares_modified)}")
-        st.write(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
+        st.subheader("Výsledky")
+        st.write(f"CELKEM IČO v originálním csv: {len(original_df_modified)}")
+        st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
+        st.write(f"IČO v Aresu ale NE v posledním csv: {len(ico_in_api_not_in_csv)}")
 
-        st.subheader("Examples of IČO numbers in API but not in original CSV:")
-        st.dataframe(ico_in_api_not_in_csv.head())
+        st.subheader("Sídla ke kontrole - nenalezena v posledním CSV")
+        st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
         # Option to download results
-        csv_ico_diff = ico_in_api_not_in_csv.to_csv(index=False)
+        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
+        csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
         st.download_button(
-            label="Download IČO differences as CSV",
-            data=csv_ico_diff,
-            file_name="ico_in_api_not_in_original_csv.csv",
+            label="Stáhnout výsledky jako CSV",
+            data=csv_to_download,
+            file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv",
         )
-
-        # New download button for df_ares_modified
+        
         csv_ares_modified = df_ares_modified.to_csv(index=False)
         st.download_button(
-            label="Download all API data as CSV",
+            label="Stáhnout Ares data do CSV",
             data=csv_ares_modified,
             file_name="ares_api_data.csv",
             mime="text/csv",
         )
 
-    st.write("Created by KZ 2024")
+    st.text("Vytvořeno KZ 2024")
 
-if __name__ == "__main__":
-    main()
-#writet text to the app saying "Vytvořeno KZ 2024"
-
-st.text("Vytvořeno KZ 2024")
 if __name__ == "__main__":
     main()
