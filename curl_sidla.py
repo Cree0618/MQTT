@@ -69,7 +69,7 @@ def format_address(payload):
     return address
 
 def main():
-    st.title("Kontrola  firemních sídel na PST budovách dle Aresu a porovnání s posledním CSV")
+    st.title("Kontrola  firemních sídel na PST budovách dle Aresu a porovnání s posledním stavem")
 
     uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
 
