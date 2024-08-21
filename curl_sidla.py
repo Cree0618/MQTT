@@ -178,7 +178,7 @@ def main():
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
         # Option to download results
-        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False, encoding='iso-8859-2')
+        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
         csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
         st.download_button(
             label="Stáhnout výsledky jako CSV",
@@ -187,7 +187,7 @@ def main():
             mime="text/csv"
         )
         
-        csv_ares_modified = df_ares_modified.to_csv(index=False, encoding='iso-8859-2')
+        csv_ares_modified = df_ares_modified.to_csv(index=False)
         csv_ares_modified = re.sub(r'IČO', 'ICO', csv_ares_modified)
         st.download_button(
             label="Stáhnout Ares data do CSV",
