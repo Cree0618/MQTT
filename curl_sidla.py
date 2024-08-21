@@ -101,24 +101,36 @@ def format_address(payload):
         address += sidlo['cisloOrientacniPismeno']
     return address
 
+
+def load_data(file):
+    if file.name.endswith('.csv'):
+        return pd.read_csv(file, delimiter=';')
+    elif file.name.endswith(('.xlsx', '.xls')):
+        return pd.read_excel(file)
+    else:
+        st.error("Unsupported file format. Please upload a CSV or Excel file.")
+        return None
+
+
+
 def main():
     
     st.title("Kontrola firemních sídel na PST budovách dle Aresu a porovnání s posledním stavem")
-    
-    
-    #if check_password():
-        
 
-    uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type=["csv", "xlsx"])
-
+    uploaded_file = st.file_uploader("Vyberte CSV nebo Excel soubor k porovnání", type=["csv", "xlsx", "xls"])
+    
     if uploaded_file is not None:
-        original_df = pd.read_csv(uploaded_file, delimiter=';')
-        st.success("Soubor úspěšně nahrán a zprocesován!")
+        original_df = load_data(uploaded_file)
+        if original_df is not None:
+            st.success("Soubor úspěšně nahrán a zprocesován!")
+        else:
+            return
     else:
-        st.warning("Prosím nahrajte CSV soubor pro porovnání")
+        st.warning("Prosím nahrajte CSV nebo Excel soubor pro porovnání")
         return
 
     api = AresAPI()
+
 
     payloads = [
         {"sidlo":{"cisloDomovni":1442,"cisloOrientacni":1,"cisloOrientacniPismeno":"b","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
@@ -187,6 +199,68 @@ def main():
             mime="text/csv"
         )
         
+        csv_ares_modified = df_ares_modified.to_csv(index=False)
+        csv_ares_modified = re.sub(r'IČO', 'ICO', csv_ares_modified)
+        st.download_button(
+            label="Stáhnout Ares data do CSV",
+            data=csv_ares_modified,
+            file_name="ares_api_data.csv",
+            mime="text/csv"
+        )
+
+    st.text("Vytvořeno KZ 2024")
+
+if __name__ == "__main__":
+    main() if st.button("Vyčíst data z Aresu a porovnat s nahraným souborem"):
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        all_subjects = []
+
+        for i, payload in enumerate(payloads):
+            address = format_address(payload)
+            status_text.text(f"Získávám data z Aresu pro adresu {address}...")
+            result = api.search_subjects(payload)
+            if result:
+                subjects = extract_subject_data(result, address)
+                all_subjects.extend(subjects)
+                st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
+            else:
+                st.write(f"Žádná data nenalezena pro adresu {address}")
+            progress_bar.progress((i + 1) / len(payloads))
+
+        df_ares = pd.DataFrame(all_subjects)
+
+        # Data processing
+        original_df_modified = original_df.copy()
+        original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
+
+        df_ares_modified = df_ares.copy()
+        df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
+
+        ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
+        ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
+
+        # Display results
+        st.subheader("Výsledky")
+        st.write(f"CELKEM IČO v originálním souboru: {len(original_df_modified)}")
+        st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
+        st.write(f"IČO v Aresu ale NE v posledním souboru: {len(ico_in_api_not_in_csv)}")
+
+        st.subheader("Sídla ke kontrole - nenalezena v posledním souboru")
+        st.dataframe(ico_in_api_not_in_csv.head(n=30))
+
+        # Option to download results
+        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
+        csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
+        st.download_button(
+            label="Stáhnout výsledky jako CSV",
+            data=csv_to_download,
+            file_name="ico_sidla_ke_kontrole.csv",
+            mime="text/csv"
+        )
+
         csv_ares_modified = df_ares_modified.to_csv(index=False)
         csv_ares_modified = re.sub(r'IČO', 'ICO', csv_ares_modified)
         st.download_button(
