@@ -105,94 +105,94 @@ def main():
     st.title("Kontrola firemních sídel na PST budovách dle Aresu a porovnání s posledním stavem")
     
     
-    if check_password():
+    #if check_password():
         
 
-        uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
+    uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
 
-        if uploaded_file is not None:
-            original_df = pd.read_csv(uploaded_file, delimiter=';')
-            st.success("Soubor úspěšně nahrán a zprocesován!")
-        else:
-            st.warning("Prosím nahrajte CSV soubor pro porovnání")
-            return
+    if uploaded_file is not None:
+        original_df = pd.read_csv(uploaded_file, delimiter=';')
+        st.success("Soubor úspěšně nahrán a zprocesován!")
+    else:
+        st.warning("Prosím nahrajte CSV soubor pro porovnání")
+        return
 
-        api = AresAPI()
+    api = AresAPI()
 
-        payloads = [
-            {"sidlo":{"cisloDomovni":1442,"cisloOrientacni":1,"cisloOrientacniPismeno":"b","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1422,"cisloOrientacni":1,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1138,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":449661},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1552,"cisloOrientacni":58,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":456225},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1525,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1461,"cisloOrientacni":2,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1481,"cisloOrientacni":4,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1559,"cisloOrientacni":5,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1561,"cisloOrientacni":4,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1448,"cisloOrientacni":7,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1449,"cisloOrientacni":9,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":1100,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-            {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
-        ]
+    payloads = [
+        {"sidlo":{"cisloDomovni":1442,"cisloOrientacni":1,"cisloOrientacniPismeno":"b","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1422,"cisloOrientacni":1,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1138,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":449661},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1552,"cisloOrientacni":58,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":456225},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1525,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1461,"cisloOrientacni":2,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1481,"cisloOrientacni":4,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1559,"cisloOrientacni":5,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1561,"cisloOrientacni":4,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1448,"cisloOrientacni":7,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1449,"cisloOrientacni":9,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1100,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
+    ]
 
-        if st.button("Vyčíst data z Aresu a porovnat s nahraným CSV"):
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+    if st.button("Vyčíst data z Aresu a porovnat s nahraným CSV"):
+        progress_bar = st.progress(0)
+        status_text = st.empty()
 
-            all_subjects = []
-            for i, payload in enumerate(payloads):
-                address = format_address(payload)
-                status_text.text(f"Získávám data z Aresu pro adresu {address}...")
-                result = api.search_subjects(payload)
-                if result:
-                    subjects = extract_subject_data(result, address)
-                    all_subjects.extend(subjects)
-                    st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
-                else:
-                    st.write(f"Žádná data nenalezena pro adresu {address}")
-                #time.sleep(1)
-                progress_bar.progress((i + 1) / len(payloads))
+        all_subjects = []
+        for i, payload in enumerate(payloads):
+            address = format_address(payload)
+            status_text.text(f"Získávám data z Aresu pro adresu {address}...")
+            result = api.search_subjects(payload)
+            if result:
+                subjects = extract_subject_data(result, address)
+                all_subjects.extend(subjects)
+                st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
+            else:
+                st.write(f"Žádná data nenalezena pro adresu {address}")
+            #time.sleep(1)
+            progress_bar.progress((i + 1) / len(payloads))
 
-            df_ares = pd.DataFrame(all_subjects)
-            
-            # Data processing
-            original_df_modified = original_df.copy()
-            original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
-            original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
+        df_ares = pd.DataFrame(all_subjects)
+        
+        # Data processing
+        original_df_modified = original_df.copy()
+        original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
 
-            df_ares_modified = df_ares.copy()
-            df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip().str.zfill(8)
-            df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
+        df_ares_modified = df_ares.copy()
+        df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
 
-            ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
-            ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
+        ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
+        ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
 
-            # Display results
-            st.subheader("Výsledky")
-            st.write(f"CELKEM IČO v originálním csv: {len(original_df_modified)}")
-            st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
-            st.write(f"IČO v Aresu ale NE v posledním csv: {len(ico_in_api_not_in_csv)}")
+        # Display results
+        st.subheader("Výsledky")
+        st.write(f"CELKEM IČO v originálním csv: {len(original_df_modified)}")
+        st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
+        st.write(f"IČO v Aresu ale NE v posledním csv: {len(ico_in_api_not_in_csv)}")
 
-            st.subheader("Sídla ke kontrole - nenalezena v posledním CSV")
-            st.dataframe(ico_in_api_not_in_csv.head(n=30))
+        st.subheader("Sídla ke kontrole - nenalezena v posledním CSV")
+        st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
-            # Option to download results
-            csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
-            csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
-            st.download_button(
-                label="Stáhnout výsledky jako CSV",
-                data=csv_to_download + df_ares_modified,
-                file_name="ico_sidla_ke_kontrole.csv",
-                mime="text/csv"
-            )
-            
-            csv_ares_modified = df_ares_modified.to_csv(index=False)
-            st.download_button(
-                label="Stáhnout Ares data do CSV",
-                data=csv_ares_modified + df_ares_modified,
-                file_name="ares_api_data.csv",
-                mime="text/csv"
-            )
+        # Option to download results
+        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
+        csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
+        st.download_button(
+            label="Stáhnout výsledky jako CSV",
+            data=csv_to_download + df_ares_modified,
+            file_name="ico_sidla_ke_kontrole.csv",
+            mime="text/csv"
+        )
+        
+        csv_ares_modified = df_ares_modified.to_csv(index=False)
+        st.download_button(
+            label="Stáhnout Ares data do CSV",
+            data=csv_ares_modified + df_ares_modified,
+            file_name="ares_api_data.csv",
+            mime="text/csv"
+        )
 
     st.text("Vytvořeno KZ 2024")
 
