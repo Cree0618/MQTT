@@ -69,15 +69,15 @@ def format_address(payload):
     return address
 
 def main():
-    st.title("ARES API Data Comparison")
+    st.title("Kontrola  firemních sídel na PST budovách dle Aresu a porovnání s posledním CSV")
 
     uploaded_file = st.file_uploader("Choose a CSV file to replace the original", type="csv")
 
     if uploaded_file is not None:
         original_df = pd.read_csv(uploaded_file, delimiter=';')
-        st.success("File successfully uploaded and processed!")
+        st.success("Soubor úspěšně nahrán a zprocesován!")
     else:
-        st.warning("Please upload a CSV file to proceed.")
+        st.warning("Prosím nahrajte CSV soubor pro porovnání")
         return
 
     api = AresAPI()
@@ -98,7 +98,7 @@ def main():
         {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
     ]
 
-    if st.button("Fetch and Compare Data"):
+    if st.button("Vyčíst data z Aresu a porovnat s posledním CSV"):
         progress_bar = st.progress(0)
         status_text = st.empty()
 
