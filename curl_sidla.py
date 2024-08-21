@@ -109,7 +109,7 @@ def main():
     #if check_password():
         
 
-    uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
+    uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type=["csv", "xlsx"])
 
     if uploaded_file is not None:
         original_df = pd.read_csv(uploaded_file, delimiter=';')
