@@ -1,3 +1,6 @@
+## FULL WORKING CODE
+
+import re
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
@@ -100,9 +103,76 @@ for payload in payloads:
         print(f"No data retrieved for address {address}")
     time.sleep(1)  # Add a 5-second delay between requests
 
-df = pd.DataFrame(all_subjects)
-print(df)
+df_ares = pd.DataFrame(all_subjects)
+print(df_ares)
 
-# Save to CSV
-df.to_csv('subjects_data.csv', index=False)
-print("Data saved to subjects_data.csv")
+
+
+# ONLY COMPARE IČO
+
+# Load the original CSV file
+file_path = 'MODIFIED_sidla_nas_prehled.csv'
+original_df = pd.read_csv(file_path, delimiter=';')
+
+# Load the API response data (assuming it's already in a DataFrame called 'df')
+# If it's not, uncomment the following line:
+# df = pd.DataFrame(all_subjects)
+
+# Ensure IČO is treated as string in both DataFrames and remove any leading/trailing whitespace
+original_df_modified = original_df.copy()
+original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip()
+df_ares_modified = df_ares.copy()
+df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip()
+
+# Find IČO numbers in the API data that are not in the original CSV
+ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df['IČO'])]
+
+# Select only the IČO and Name columns
+ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
+
+# Save the results to a CSV file
+ico_in_api_not_in_csv.to_csv('ico_in_api_not_in_original_csv.csv', index=False)
+
+# Print summary
+print(f"Total IČO numbers in original CSV: {len(original_df)}")
+print(f"Total IČO numbers in API data: {len(df_ares_modified)}")
+print(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
+
+# Display a few examples
+print("\nExamples of IČO numbers in API but not in original CSV:")
+print(ico_in_api_not_in_csv.head())
+
+print("\nResults saved to 'ico_in_api_not_in_original_csv.csv'")
+
+
+# if the "IČO" number is less than 8 characters, add leading zeros to make it 8 characters long
+
+df_ares_modified['IČO'] = df_ares_modified['IČO'].str.zfill(8)
+# remove all thle " characters from the "Name" column
+df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
+
+original_df_modified['IČO'] = original_df_modified['IČO'].str.zfill(8)
+# remove all thle " characters from the "Name" column
+original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
+
+
+
+ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
+
+# Select only the IČO and Name columns
+ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
+
+# Save the results to a CSV file
+ico_in_api_not_in_csv.to_csv('ico_in_api_not_in_original_csv.csv', index=False)
+
+# Print summary
+print(f"Total IČO numbers in original CSV: {len(original_df_modified)}")
+print(f"Total IČO numbers in API data: {len(df_ares_modified)}")
+print(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
+
+# Display a few examples
+print("\nExamples of IČO numbers in API but not in original CSV:")
+print(ico_in_api_not_in_csv.head())
+
+print("\nResults saved to 'ico_in_api_not_in_original_csv.csv'")
+
