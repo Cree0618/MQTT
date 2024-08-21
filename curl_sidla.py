@@ -17,7 +17,7 @@ class AresAPI:
         if response.status_code == 200:
             self.cookie = self.session.cookies.get("GN-TOKEN-CSP")
             self.cookie_expiry = datetime.now() + timedelta(hours=1)
-            st.success("Cookie refreshed successfully")
+            st.success("Cookie úspěšně obnoven")
         else:
             st.error(f"Failed to refresh cookie. Status code: {response.status_code}")
 
@@ -149,13 +149,14 @@ def main():
             file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv",
         )
-        st.download_button(
+        
+        
+st.download_button(
             label="Stáhnout seznam z Aresu jako CSV",
             data=df_ares_modified,
             file_name="ares_sidla_prehled.csv",
             mime="text/csv",
-        
-        )
+)
 #writet text to the app saying "Vytvořeno KZ 2024"
 
 st.text("Vytvořeno KZ 2024")
