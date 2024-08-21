@@ -148,8 +148,12 @@ def main():
             data=csv_to_download,
             file_name="ico_sidla_ke_kontrole.csv",
             mime="text/csv",
-            
-            
+        )
+        st.download_button(
+            label="Stáhnout seznam z Aresu jako CSV",
+            data=df_ares_modified,
+            file_name="ares_sidla_prehled.csv",
+            mime="text/csv",
         
         )
 #writet text to the app saying "Vytvořeno KZ 2024"
