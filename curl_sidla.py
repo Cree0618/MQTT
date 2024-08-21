@@ -150,6 +150,8 @@ def main():
             
         
         )
-st.title("Vytvořeno KZ 2024")
+#writet text to the app saying "Vytvořeno KZ 2024"
+
+st.text("Vytvořeno KZ 2024")
 if __name__ == "__main__":
     main()
