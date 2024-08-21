@@ -182,7 +182,7 @@ def main():
             csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
             st.download_button(
                 label="Stáhnout výsledky jako CSV",
-                data=csv_to_download + df_ares_modified
+                data=csv_to_download + df_ares_modified,
                 file_name="ico_sidla_ke_kontrole.csv",
                 mime="text/csv"
             )
