@@ -115,7 +115,7 @@ def main():
         {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
     ]
 
-     if 'df_ares' not in st.session_state:
+    if 'df_ares' not in st.session_state:
         st.session_state.df_ares = None
 
     if st.button("Fetch and Compare Data"):
