@@ -112,7 +112,7 @@ def main():
     uploaded_file = st.file_uploader("Vyberte CSV soubor k porovnání", type="csv")
 
     if uploaded_file is not None:
-        original_df = pd.read_csv(uploaded_file, delimiter=';', encoding='iso-8859-2')
+        original_df = pd.read_csv(uploaded_file, delimiter=';')
         st.success("Soubor úspěšně nahrán a zprocesován!")
     else:
         st.warning("Prosím nahrajte CSV soubor pro porovnání")
