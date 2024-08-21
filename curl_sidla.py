@@ -1,10 +1,9 @@
-## FULL WORKING CODE
-
-import re
-import requests
+import streamlit as st
 import pandas as pd
+import requests
 from datetime import datetime, timedelta
 import time
+import re
 
 class AresAPI:
     def __init__(self):
@@ -18,9 +17,9 @@ class AresAPI:
         if response.status_code == 200:
             self.cookie = self.session.cookies.get("GN-TOKEN-CSP")
             self.cookie_expiry = datetime.now() + timedelta(hours=1)
-            print("Cookie refreshed successfully")
+            st.success("Cookie refreshed successfully")
         else:
-            print(f"Failed to refresh cookie. Status code: {response.status_code}")
+            st.error(f"Failed to refresh cookie. Status code: {response.status_code}")
 
     def check_cookie(self):
         if not self.cookie or (self.cookie_expiry and datetime.now() > self.cookie_expiry):
@@ -45,19 +44,18 @@ class AresAPI:
             if response.status_code == 200:
                 return response.json()
             elif response.status_code == 401:
-                print("Unauthorized. Refreshing cookie and retrying...")
+                st.warning("Unauthorized. Refreshing cookie and retrying...")
                 self.refresh_cookie()
             else:
-                print(f"Error: {response.status_code}. Retrying in 5 seconds...")
-                import time
+                st.warning(f"Error: {response.status_code}. Retrying in 5 seconds...")
                 time.sleep(5)
 
-        print(f"Failed to get data after {max_retries} attempts")
+        st.error(f"Failed to get data after {max_retries} attempts")
         return None
 
 def extract_subject_data(result, address):
     subjects = result.get('ekonomickeSubjekty', [])
-    return [{'Name': subject.get('obchodniJmeno', ''), 
+    return [{'Name': subject.get('obchodniJmeno', ''),
              'IČO': subject.get('ico', ''),
              'Address': address} for subject in subjects]
 
@@ -70,109 +68,85 @@ def format_address(payload):
         address += sidlo['cisloOrientacniPismeno']
     return address
 
-api = AresAPI()
+def main():
+    st.title("ARES API Data Comparison")
 
-payloads = [
-    {"sidlo":{"cisloDomovni":1442,"cisloOrientacni":1,"cisloOrientacniPismeno":"b","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1422,"cisloOrientacni":1,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1138,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":449661},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1552,"cisloOrientacni":58,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":456225},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1525,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1461,"cisloOrientacni":2,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1481,"cisloOrientacni":4,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1559,"cisloOrientacni":5,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1561,"cisloOrientacni":4,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1448,"cisloOrientacni":7,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1449,"cisloOrientacni":9,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":1100,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
-    {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
-    
-    # New payload added here
-]
+    uploaded_file = st.file_uploader("Choose a CSV file to replace the original", type="csv")
 
-all_subjects = []
-
-for payload in payloads:
-    address = format_address(payload)
-    result = api.search_subjects(payload)
-    if result:
-        subjects = extract_subject_data(result, address)
-        all_subjects.extend(subjects)
-        print(f"Found {len(subjects)} subjects for address {address}")
+    if uploaded_file is not None:
+        original_df = pd.read_csv(uploaded_file, delimiter=';')
+        st.success("File successfully uploaded and processed!")
     else:
-        print(f"No data retrieved for address {address}")
-    time.sleep(1)  # Add a 5-second delay between requests
+        st.warning("Please upload a CSV file to proceed.")
+        return
 
-df_ares = pd.DataFrame(all_subjects)
-print(df_ares)
+    api = AresAPI()
 
+    payloads = [
+        {"sidlo":{"cisloDomovni":1442,"cisloOrientacni":1,"cisloOrientacniPismeno":"b","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1422,"cisloOrientacni":1,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1138,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":449661},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1552,"cisloOrientacni":58,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":456225},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1525,"cisloOrientacni":1,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1461,"cisloOrientacni":2,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1481,"cisloOrientacni":4,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1559,"cisloOrientacni":5,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1561,"cisloOrientacni":4,"cisloOrientacniPismeno":"a","kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1448,"cisloOrientacni":7,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1449,"cisloOrientacni":9,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":717592},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":1100,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":478652},"pocet":200,"start":0,"razeni":[]},
+        {"sidlo":{"cisloDomovni":266,"cisloOrientacni":2,"kodObce":554782,"kodMestskeCastiObvodu":500119,"kodUlice":730700},"pocet":200,"start":0,"razeni":[]}
+    ]
 
+    if st.button("Fetch and Compare Data"):
+        progress_bar = st.progress(0)
+        status_text = st.empty()
 
-# ONLY COMPARE IČO
+        all_subjects = []
+        for i, payload in enumerate(payloads):
+            address = format_address(payload)
+            status_text.text(f"Fetching data for address {address}...")
+            result = api.search_subjects(payload)
+            if result:
+                subjects = extract_subject_data(result, address)
+                all_subjects.extend(subjects)
+                st.write(f"Found {len(subjects)} subjects for address {address}")
+            else:
+                st.write(f"No data retrieved for address {address}")
+            time.sleep(1)
+            progress_bar.progress((i + 1) / len(payloads))
 
-# Load the original CSV file
-file_path = 'MODIFIED_sidla_nas_prehled.csv'
-original_df = pd.read_csv(file_path, delimiter=';')
+        df_ares = pd.DataFrame(all_subjects)
+        
+        # Data processing
+        original_df_modified = original_df.copy()
+        original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
 
-# Load the API response data (assuming it's already in a DataFrame called 'df')
-# If it's not, uncomment the following line:
-# df = pd.DataFrame(all_subjects)
+        df_ares_modified = df_ares.copy()
+        df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
 
-# Ensure IČO is treated as string in both DataFrames and remove any leading/trailing whitespace
-original_df_modified = original_df.copy()
-original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip()
-df_ares_modified = df_ares.copy()
-df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip()
+        ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
+        ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
 
-# Find IČO numbers in the API data that are not in the original CSV
-ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df['IČO'])]
+        # Display results
+        st.subheader("Results")
+        st.write(f"Total IČO numbers in original CSV: {len(original_df_modified)}")
+        st.write(f"Total IČO numbers in API data: {len(df_ares_modified)}")
+        st.write(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
 
-# Select only the IČO and Name columns
-ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
+        st.subheader("Examples of IČO numbers in API but not in original CSV:")
+        st.dataframe(ico_in_api_not_in_csv.head())
 
-# Save the results to a CSV file
-ico_in_api_not_in_csv.to_csv('ico_in_api_not_in_original_csv.csv', index=False)
+        # Option to download results
+        csv = ico_in_api_not_in_csv.to_csv(index=False)
+        st.download_button(
+            label="Download results as CSV",
+            data=csv,
+            file_name="ico_in_api_not_in_original_csv.csv",
+            mime="text/csv",
+        )
 
-# Print summary
-print(f"Total IČO numbers in original CSV: {len(original_df)}")
-print(f"Total IČO numbers in API data: {len(df_ares_modified)}")
-print(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
-
-# Display a few examples
-print("\nExamples of IČO numbers in API but not in original CSV:")
-print(ico_in_api_not_in_csv.head())
-
-print("\nResults saved to 'ico_in_api_not_in_original_csv.csv'")
-
-
-# if the "IČO" number is less than 8 characters, add leading zeros to make it 8 characters long
-
-df_ares_modified['IČO'] = df_ares_modified['IČO'].str.zfill(8)
-# remove all thle " characters from the "Name" column
-df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
-
-original_df_modified['IČO'] = original_df_modified['IČO'].str.zfill(8)
-# remove all thle " characters from the "Name" column
-original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
-
-
-
-ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
-
-# Select only the IČO and Name columns
-ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
-
-# Save the results to a CSV file
-ico_in_api_not_in_csv.to_csv('ico_in_api_not_in_original_csv.csv', index=False)
-
-# Print summary
-print(f"Total IČO numbers in original CSV: {len(original_df_modified)}")
-print(f"Total IČO numbers in API data: {len(df_ares_modified)}")
-print(f"IČO numbers in API but not in original CSV: {len(ico_in_api_not_in_csv)}")
-
-# Display a few examples
-print("\nExamples of IČO numbers in API but not in original CSV:")
-print(ico_in_api_not_in_csv.head())
-
-print("\nResults saved to 'ico_in_api_not_in_original_csv.csv'")
-
+if __name__ == "__main__":
+    main()
