@@ -150,13 +150,16 @@ def main():
             mime="text/csv",
         )
         
-        
-st.download_button(
-            label="Stáhnout seznam z Aresu jako CSV",
-            data=df_ares_modified,
-            file_name="ares_sidla_prehled.csv",
+        csv_ares_modified = df_ares_modified.to_csv(index=False)
+        st.download_button(
+            label="Stáhnout Ares data jako CSV",
+            data=csv_ares_modified,
+            file_name="ares_api_data.csv",
             mime="text/csv",
-)
+        )
+        
+        
+
 #writet text to the app saying "Vytvořeno KZ 2024"
 
 st.text("Vytvořeno KZ 2024")
