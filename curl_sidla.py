@@ -4,7 +4,7 @@ import requests
 from datetime import datetime, timedelta
 import time
 import re
-import hashlib
+import bcrypt
 
 class AresAPI:
     def __init__(self):
@@ -60,7 +60,7 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
-        if st.session_state["password"] == st.secrets["password"]:
+        if bcrypt.checkpw(st.session_state["password"].encode(), st.secrets["hashed_password"].encode()):
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # don't store password
         else:
@@ -82,7 +82,6 @@ def check_password():
     else:
         # Password correct.
         return True
-
 
 
 
