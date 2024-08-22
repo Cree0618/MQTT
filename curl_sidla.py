@@ -169,6 +169,7 @@ def main():
         df_ares = pd.DataFrame(all_subjects)
 
         # Data processing
+        # Remove leading and trailing whitespaces from IČO and fill with zeros
         original_df_modified = original_df.copy()
         original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
         original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
@@ -178,6 +179,8 @@ def main():
         df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
 
         ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
+        ico_in_original_not_in_api = original_df_modified[~original_df_modified['IČO'].isin(df_ares_modified['IČO'])]
+        ico_in_original_not_in_api = ico_in_original_not_in_api[['IČO', 'Název']]
         ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
 
         # Display results
@@ -185,7 +188,7 @@ def main():
         st.write(f"CELKEM IČO v originálním souboru: {len(original_df_modified)}")
         st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
         st.write(f"IČO v Aresu ale NE v posledním souboru: {len(ico_in_api_not_in_csv)}")
-
+        st.write(f"IČO nenalezené v Aresu (pravděpodobně zrušeno sídlo): {len(ico_in_original_not_in_api)}")
         st.subheader("Sídla ke kontrole - nenalezena v posledním souboru")
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
 
@@ -207,6 +210,15 @@ def main():
             file_name="ares_api_data.csv",
             mime="text/csv"
         )
+        csv_zrusena_sidla = ico_in_original_not_in_api.to_csv(index=False)
+        csv_zrusena_sidla_modified = re.sub(r'IČO', 'ICO', csv_zrusena_sidla)
+        st.download_button(
+            label="Stáhnout zrušená sídla",
+            data=csv_zrusena_sidla_modified,
+            file_name="zrusena_sidla_passerinvest.csv",
+            mime="text/csv"
+        )
+       
 
     st.text("Vytvořeno KZ 2024")
 
