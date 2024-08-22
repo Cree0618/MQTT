@@ -178,11 +178,16 @@ def main():
         df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip().str.zfill(8)
         df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
 
+        if 'IČO' not in original_df_modified.columns:
+            original_df_modified.rename(columns={'ICO': 'IČO'}, inplace=True)
+        if 'IČO' not in df_ares_modified.columns:
+            df_ares_modified.rename(columns={'ICO': 'IČO'}, inplace=True)
+
         ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
         ico_in_original_not_in_api = original_df_modified[~original_df_modified['IČO'].isin(df_ares_modified['IČO'])]
         ico_in_original_not_in_api = ico_in_original_not_in_api[['IČO', 'Název']]
         ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
-
+        
         # Display results
         st.subheader("Výsledky")
         st.write(f"CELKEM IČO v originálním souboru: {len(original_df_modified)}")
