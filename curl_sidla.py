@@ -116,13 +116,18 @@ def load_data(file):
         # set row 6 as column names
         df_modified.columns = df_modified.iloc[0]
         df_modified = df_modified.drop([6])
-        st.write(df_modified)
         df_modified = df_modified[['Budova', 'IČO', 'Název', 'adresa']]
+        
+        # Convert all columns to string type to avoid mixed data types
+        df_modified = df_modified.astype(str)
+        
+        # Remove any leading/trailing whitespace
+        df_modified = df_modified.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+        
         return df_modified
     else:
         st.error("Unsupported file format. Please upload a CSV or Excel file.")
         return None
-
 
 def main():
     
