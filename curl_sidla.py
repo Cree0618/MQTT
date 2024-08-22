@@ -189,7 +189,7 @@ def main():
         st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
         st.write(f"IČO v Aresu ale NE v posledním souboru: {len(ico_in_api_not_in_csv)}")
         st.write(f"IČO nenalezené v Aresu (pravděpodobně zrušeno sídlo): {len(ico_in_original_not_in_api)}")
-        st.subheader("Sídla ke kontrole - nenalezena v posledním souboru")
+        st.subheader("Sídla pravděpodobně nová - nenalezena v nahraném souboru")
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
         st.subheader("Sídla pravděpodovně zrušená - nenalezena v Aresu na daných adresách")
         st.dataframe(ico_in_original_not_in_api.head(n=30))
