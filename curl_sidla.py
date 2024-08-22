@@ -164,7 +164,7 @@ def main():
 
         # Data processing
         original_df_modified = original_df.copy()
-        original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
+        original_df_modified['ICO'] = original_df_modified['ICO'].astype(str).str.strip().str.zfill(8)
         original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
 
         df_ares_modified = df_ares.copy()
