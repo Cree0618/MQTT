@@ -116,6 +116,7 @@ def load_data(file):
         # set row 6 as column names
         df_modified.columns = df_modified.iloc[0]
         df_modified = df_modified.drop([6])
+        st.write(df_modified)
         df_modified = df_modified[['Budova', 'IČO', 'Název', 'adresa']]
         return df_modified
     else:
