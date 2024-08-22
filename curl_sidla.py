@@ -106,11 +106,21 @@ def load_data(file):
     if file.name.endswith('.csv'):
         return pd.read_csv(file, delimiter=';')
     elif file.name.endswith(('.xlsx', '.xls')):
-        return pd.read_excel(file)
+        original_excel = openpyxl.load_workbook(file)
+        sheet = original_excel.active
+        data = sheet.values
+        cols = next(data)[0:]
+        data = list(data)
+        df = pd.DataFrame(data, columns=cols)
+        df_modified = df.drop([0,1,2,3,4,5])
+        # set row 6 as column names
+        df_modified.columns = df_modified.iloc[0]
+        df_modified = df_modified.drop([6])
+        df_modified = df_modified[['Budova', 'IČO', 'Název', 'adresa']]
+        return df_modified
     else:
         st.error("Unsupported file format. Please upload a CSV or Excel file.")
         return None
-
 
 
 def main():
