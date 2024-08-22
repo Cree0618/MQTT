@@ -1,11 +1,14 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime, timedelta
 import time
-import re
 import bcrypt
 import openpyxl
+
+# Set page config to support UTF-8
+st.set_page_config(page_title="Kontrola firemních sídel", layout="wide", initial_sidebar_state="expanded")
 
 class AresAPI:
     def __init__(self):
@@ -55,7 +58,6 @@ class AresAPI:
         st.error(f"Failed to get data after {max_retries} attempts")
         return None
 
-
 def check_password():
     """Returns `True` if the user had the correct password."""
 
@@ -84,8 +86,6 @@ def check_password():
         # Password correct.
         return True
 
-
-
 def extract_subject_data(result, address):
     subjects = result.get('ekonomickeSubjekty', [])
     return [{'Name': subject.get('obchodniJmeno', ''),
@@ -101,20 +101,16 @@ def format_address(payload):
         address += sidlo['cisloOrientacniPismeno']
     return address
 
-
 def load_data(file):
     if file.name.endswith('.csv'):
-        return pd.read_csv(file, delimiter=';')
+        return pd.read_csv(file, delimiter=';', encoding='utf-8-sig')
     elif file.name.endswith(('.xlsx', '.xls')):
-        return pd.read_excel(file)
+        return pd.read_excel(file, engine='openpyxl')
     else:
-        st.error("Unsupported file format. Please upload a CSV or Excel file.")
+        st.error("Nepodporovaný formát souboru. Nahrajte prosím CSV nebo Excel soubor.")
         return None
 
-
-
 def main():
-    
     st.title("Kontrola firemních sídel na PST budovách dle Aresu a porovnání s posledním stavem")
 
     uploaded_file = st.file_uploader("Vyberte CSV nebo Excel soubor k porovnání", type=["csv", "xlsx", "xls"])
@@ -128,8 +124,6 @@ def main():
     else:
         st.warning("Prosím nahrajte CSV nebo Excel soubor pro porovnání")
         return
-
- 
 
     api = AresAPI()
 
@@ -161,7 +155,7 @@ def main():
             if result:
                 subjects = extract_subject_data(result, address)
                 all_subjects.extend(subjects)
-                st.write(f"Nalezeno {len(subjects)} subjektu na adrese {address}")
+                st.write(f"Nalezeno {len(subjects)} subjektů na adrese {address}")
             else:
                 st.write(f"Žádná data nenalezena pro adresu {address}")
             progress_bar.progress((i + 1) / len(payloads))
@@ -169,7 +163,6 @@ def main():
         df_ares = pd.DataFrame(all_subjects)
 
         # Data processing
-        # Remove leading and trailing whitespaces from IČO and fill with zeros
         original_df_modified = original_df.copy()
         original_df_modified['IČO'] = original_df_modified['IČO'].astype(str).str.strip().str.zfill(8)
         original_df_modified['Název'] = original_df_modified['Název'].str.replace('"', '')
@@ -177,11 +170,6 @@ def main():
         df_ares_modified = df_ares.copy()
         df_ares_modified['IČO'] = df_ares_modified['IČO'].astype(str).str.strip().str.zfill(8)
         df_ares_modified['Name'] = df_ares_modified['Name'].str.replace('"', '')
-
-        if 'IČO' not in original_df_modified.columns:
-            original_df_modified.rename(columns={'ICO': 'IČO'}, inplace=True)
-        if 'IČO' not in df_ares_modified.columns:
-            df_ares_modified.rename(columns={'ICO': 'IČO'}, inplace=True)
 
         ico_in_api_not_in_csv = df_ares_modified[~df_ares_modified['IČO'].isin(original_df_modified['IČO'])]
         ico_in_original_not_in_api = original_df_modified[~original_df_modified['IČO'].isin(df_ares_modified['IČO'])]
@@ -192,17 +180,15 @@ def main():
         st.subheader("Výsledky")
         st.write(f"CELKEM IČO v originálním souboru: {len(original_df_modified)}")
         st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
-        st.write(f"IČO v Aresu ale NE v posledním souboru (pravděpodovně nové sídlo): {len(ico_in_api_not_in_csv)}")
+        st.write(f"IČO v Aresu ale NE v posledním souboru (pravděpodobně nové sídlo): {len(ico_in_api_not_in_csv)}")
         st.write(f"IČO nenalezené v Aresu (pravděpodobně zrušeno sídlo): {len(ico_in_original_not_in_api)}")
         st.subheader("Sídla pravděpodobně nová - nenalezena v nahraném souboru")
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
-        st.subheader("Sídla pravděpodovně zrušená - nenalezena v Aresu na daných adresách")
+        st.subheader("Sídla pravděpodobně zrušená - nenalezena v Aresu na daných adresách")
         st.dataframe(ico_in_original_not_in_api.head(n=30))
         
-
         # Option to download results
-        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False)
-        csv_to_download = re.sub(r'IČO', 'ICO', csv_to_download)
+        csv_to_download = ico_in_api_not_in_csv.to_csv(index=False, encoding='utf-8-sig')
         st.download_button(
             label="Stáhnout výsledky jako CSV",
             data=csv_to_download,
@@ -210,26 +196,23 @@ def main():
             mime="text/csv"
         )
 
-        csv_ares_modified = df_ares_modified.to_csv(index=False)
-        csv_ares_modified = re.sub(r'IČO', 'ICO', csv_ares_modified)
+        csv_ares_modified = df_ares_modified.to_csv(index=False, encoding='utf-8-sig')
         st.download_button(
             label="Stáhnout Ares data do CSV",
             data=csv_ares_modified,
             file_name="ares_api_data.csv",
             mime="text/csv"
         )
-        csv_zrusena_sidla = ico_in_original_not_in_api.to_csv(index=False)
-        csv_zrusena_sidla_modified = re.sub(r'IČO', 'ICO', csv_zrusena_sidla)
+
+        csv_zrusena_sidla = ico_in_original_not_in_api.to_csv(index=False, encoding='utf-8-sig')
         st.download_button(
             label="Stáhnout zrušená sídla",
-            data=csv_zrusena_sidla_modified,
+            data=csv_zrusena_sidla,
             file_name="zrusena_sidla_passerinvest.csv",
             mime="text/csv"
         )
-       
 
     st.text("Vytvořeno KZ 2024")
 
 if __name__ == "__main__":
     main()
-
