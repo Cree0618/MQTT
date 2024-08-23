@@ -200,7 +200,7 @@ def main():
         ico_in_api_not_in_csv = ico_in_api_not_in_csv[['IČO', 'Name']]
 
         # Display results
-        st.subheader("Výsledky", color="blue")
+        st.subheader("Výsledky :blue")
         st.write(f"CELKEM IČO v originálním souboru: {len(original_df_modified)}")
         st.write(f"Celkem IČO v datech z Aresu: {len(df_ares_modified)}")
         st.write(f"IČO v Aresu ale NE v posledním souboru (pravděpodovně nové sídlo): {len(ico_in_api_not_in_csv)}")
