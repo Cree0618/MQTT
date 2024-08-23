@@ -207,7 +207,7 @@ def main():
         st.write(f"IČO nenalezené v Aresu (pravděpodobně zrušeno sídlo): {len(ico_in_original_not_in_api)}")
         st.subheader("Sídla pravděpodobně nová - nenalezena v nahraném souboru")
         st.dataframe(ico_in_api_not_in_csv.head(n=30))
-        st.subheader("Sídla pravděpodovně zrušená - nenalezena v Aresu na daných adresách")
+        st.subheader("Sídla pravděpodobně zrušená - nenalezena v Aresu na daných adresách")
         st.dataframe(ico_in_original_not_in_api.head(n=30))
         
 
